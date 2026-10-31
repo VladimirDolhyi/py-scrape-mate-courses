@@ -29,21 +29,25 @@ def parse_single_course(course: Tag) -> Course:
     topics_count = 0
 
     course_link = course.find_parent("a")
-    href_value = course_link["href"]
-    course_url = urljoin(BASE_URL, href_value)
-    if "courses" in href_value:
-        inner_soup = get_soup(course_url)
-        modules = inner_soup.select(".ft6NTW_moduleListItem")
-        modules_count = len(modules)
-        for module in modules:
-            topics_count += int(module.select_one(".ft6NTW_topicsCount")
-                                .text.split()[0])
-    elif "skills" in href_value:
-        inner_soup = get_soup(course_url)
-        modules_count = int(inner_soup.select_one("h2.mt-4").text.split()[0])
-        h2_element = inner_soup.select_one("h2.mt-4")
-        numbers = re.findall(r"\d+", h2_element.text)
-        topics_count = int(numbers[1])
+    if course_link and course_link.has_attr("href"):
+        href_value = course_link["href"]
+        course_url = urljoin(BASE_URL, href_value)
+        if "courses" in href_value:
+            inner_soup = get_soup(course_url)
+            modules = inner_soup.select(".ft6NTW_moduleListItem")
+            modules_count = len(modules)
+            for module in modules:
+                topics_el = module.select_one(".ft6NTW_topicsCount")
+                if topics_el:
+                    topics_count += int(topics_el.text.split()[0])
+        elif "skills" in href_value:
+            inner_soup = get_soup(course_url)
+            h2_element = inner_soup.select_one("h2.mt-4")
+            if h2_element:
+                numbers = re.findall(r"\d+", h2_element.text)
+                if len(numbers) >= 2:
+                    modules_count = int(numbers[0])
+                    topics_count = int(numbers[1])
 
     return Course(
         name=course.select_one(".FUm52q_title").text,
