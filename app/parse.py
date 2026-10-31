@@ -25,6 +25,13 @@ def get_soup(url: str) -> BeautifulSoup:
 
 
 def parse_single_course(course: Tag) -> Course:
+    title_el = course.select_one(".FUm52q_title")
+    name = title_el.text if title_el else ""
+    description_el = course.select_one(".FUm52q_description")
+    short_description = description_el.text if description_el else ""
+    duration_el = course.select_one(".FUm52q_duration")
+    duration = duration_el.text if duration_el else ""
+
     modules_count = 0
     topics_count = 0
 
@@ -50,9 +57,9 @@ def parse_single_course(course: Tag) -> Course:
                     topics_count = int(numbers[1])
 
     return Course(
-        name=course.select_one(".FUm52q_title").text,
-        short_description=course.select_one(".FUm52q_description").text,
-        duration=course.select_one(".FUm52q_duration").text,
+        name=name,
+        short_description=short_description,
+        duration=duration,
         modules_count=modules_count,
         topics_count=topics_count
     )
